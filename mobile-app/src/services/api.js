@@ -3,7 +3,7 @@ import axios from "axios";
 // PENTING: Pilih salah satu sesuai kondisimu!
 
 // OPSI 1: Jika pakai Emulator Android bawaan Android Studio
-const API_URL = "http://192.168.1.15:3000/api";
+const API_URL = "http://192.168.1.14:3000/api";
 
 // OPSI 2: Jika pakai HP Asli (Harus satu Wi-Fi dengan Laptop)
 // Ganti IP di bawah dengan IP Laptopmu (Cek di cmd > ipconfig)
