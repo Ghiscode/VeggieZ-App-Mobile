@@ -1,7 +1,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { CartProvider } from "./context/CartContext"; // <--- IMPORT INI
+import { CartProvider } from "./context/CartContext";
 
 import SplashScreen from "./screens/SplashScreen";
 import LoginScreen from "./screens/LoginScreen";
@@ -9,12 +9,14 @@ import HomeScreen from "./screens/HomeScreen";
 import ProductDetailScreen from "./screens/ProductDetailScreen";
 import CartScreen from "./screens/CartScreen";
 import CheckoutScreen from "./screens/CheckoutScreen";
+import OrdersScreen from "./screens/OrdersScreen";
+import EditAddressScreen from "./screens/EditAddressScreen"; // <--- Import
+import OrderSuccessScreen from "./screens/OrderSuccessScreen";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    // BUNGKUS SEMUANYA DENGAN CART PROVIDER
     <CartProvider>
       <NavigationContainer>
         <Stack.Navigator
@@ -27,6 +29,9 @@ export default function App() {
           <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
           <Stack.Screen name="Cart" component={CartScreen} />
           <Stack.Screen name="Checkout" component={CheckoutScreen} />
+          <Stack.Screen name="Orders" component={OrdersScreen} />
+          <Stack.Screen name="EditAddress" component={EditAddressScreen} />
+          <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>

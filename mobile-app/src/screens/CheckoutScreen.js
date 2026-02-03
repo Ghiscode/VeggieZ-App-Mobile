@@ -14,11 +14,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../context/CartContext";
 
 const CheckoutScreen = ({ navigation }) => {
-  const { cartItems, placeOrder } = useCart();
+  // Ambil data & fungsi dari Global Context
+  const { cartItems, placeOrder, deliveryAddress } = useCart();
 
-  // --- STATE & DATA ---
-
-  // 1. Logika Pengiriman Dinamis
+  // --- STATE PENGIRIMAN ---
   const [deliveryType, setDeliveryType] = useState("Standard");
   const DELIVERY_OPTIONS = {
     Standard: { price: 10000, label: "1-2 Hari" },
@@ -26,7 +25,7 @@ const CheckoutScreen = ({ navigation }) => {
     Schedule: { price: 15000, label: "Atur Waktu" },
   };
 
-  // 2. Daftar Metode Pembayaran (Path disesuaikan dengan lampiran kamu)
+  // --- STATE PEMBAYARAN ---
   const [selectedPayment, setSelectedPayment] = useState("BCA");
   const PAYMENT_METHODS = [
     {
@@ -48,16 +47,16 @@ const CheckoutScreen = ({ navigation }) => {
       id: "GoPay",
       name: "GoPay",
       image: require("../../assets/images/gopay.jpeg"),
-    }, // Ekstensi .jpeg
-    { id: "OVO", name: "OVO", image: require("../../assets/images/ovo.jpeg") }, // Ekstensi .jpeg
+    },
+    { id: "OVO", name: "OVO", image: require("../../assets/images/ovo.jpeg") },
     {
       id: "COD",
       name: "Tunai (COD)",
       image: require("../../assets/images/cod.jpeg"),
-    }, // Ekstensi .jpeg
+    },
   ];
 
-  // Hitung Angka Real
+  // --- KALKULASI HARGA ---
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -68,17 +67,17 @@ const CheckoutScreen = ({ navigation }) => {
   const formatRupiah = (num) =>
     "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
+  // --- HANDLE PLACE ORDER ---
   const handlePlaceOrder = () => {
+    // 1. Cek Keranjang
     if (cartItems.length === 0)
       return Alert.alert("Error", "Keranjang kosong!");
 
+    // 2. Simpan Pesanan ke Riwayat
     placeOrder();
 
-    Alert.alert(
-      "Pesanan Berhasil!",
-      `Metode: ${selectedPayment}\nPengiriman: ${deliveryType}\nTotal: ${formatRupiah(total)}`,
-      [{ text: "Lihat Pesanan", onPress: () => navigation.navigate("Orders") }],
-    );
+    // 3. Pindah ke Halaman Sukses (Pakai replace biar gak bisa back ke checkout)
+    navigation.replace("OrderSuccess");
   };
 
   return (
@@ -103,102 +102,100 @@ const CheckoutScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 180 }}
       >
-        {/* 1. Order Summary (Sesuai Figma) */}
+        {/* 1. Order Summary */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
+          <Text style={styles.sectionTitle}>Ringkasan Pesanan</Text>
           <TouchableOpacity
             style={styles.summaryCard}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.itemCountText}>{cartItems.length} items</Text>
+            <Text style={styles.itemCountText}>
+              {cartItems.length} items dalam keranjang
+            </Text>
             <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
           </TouchableOpacity>
         </View>
 
-        {/* 2. Delivery Address (Sesuai Figma) */}
+        {/* 2. Alamat Pengiriman (Dinamis dari Context) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Address</Text>
+          <Text style={styles.sectionTitle}>Alamat Pengiriman</Text>
           <View style={styles.addressCard}>
             <View
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <Text style={styles.addressName}>Michael Anderson</Text>
-              <TouchableOpacity>
-                <Ionicons name="pencil" size={18} color="#27ae60" />
+              <Text style={styles.addressName}>{deliveryAddress.name}</Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("EditAddress")}
+              >
+                <Text
+                  style={{ color: "#27ae60", fontWeight: "bold", fontSize: 12 }}
+                >
+                  UBAH
+                </Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.addressText}>Apartment 15C</Text>
-            <Text style={styles.addressText}>350 West 42nd Street, NY</Text>
-            <Text style={styles.addressText}>+1 (917) 555-0192</Text>
+            <Text style={styles.addressText}>{deliveryAddress.address}</Text>
+            <Text style={styles.addressText}>{deliveryAddress.city}</Text>
+
+            {/* Tampilkan Patokan jika ada */}
+            {deliveryAddress.landmark !== "" && (
+              <Text
+                style={[
+                  styles.addressText,
+                  { fontStyle: "italic", marginTop: 2 },
+                ]}
+              >
+                (Patokan: {deliveryAddress.landmark})
+              </Text>
+            )}
+
+            <Text
+              style={[styles.addressText, { marginTop: 5, fontWeight: "600" }]}
+            >
+              {deliveryAddress.phone}
+            </Text>
           </View>
         </View>
 
-        {/* 3. Delivery Type (Dinamis) */}
+        {/* 3. Tipe Pengiriman (Pilihan Dinamis) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Type</Text>
+          <Text style={styles.sectionTitle}>Tipe Pengiriman</Text>
           <View style={styles.deliveryContainer}>
-            {/* Standard */}
-            <TouchableOpacity
-              style={[
-                styles.deliveryCard,
-                deliveryType === "Standard" && styles.deliveryCardActive,
-              ]}
-              onPress={() => setDeliveryType("Standard")}
-            >
-              <Ionicons
-                name="bus-outline"
-                size={24}
-                color={deliveryType === "Standard" ? "#27ae60" : "#bdc3c7"}
-              />
-              <Text style={styles.deliveryTypeLabel}>Standard</Text>
-              <Text style={styles.deliveryTimeLabel}>
-                {DELIVERY_OPTIONS.Standard.label}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Express */}
-            <TouchableOpacity
-              style={[
-                styles.deliveryCard,
-                deliveryType === "Express" && styles.deliveryCardActive,
-              ]}
-              onPress={() => setDeliveryType("Express")}
-            >
-              <Ionicons
-                name="rocket-outline"
-                size={24}
-                color={deliveryType === "Express" ? "#27ae60" : "#bdc3c7"}
-              />
-              <Text style={styles.deliveryTypeLabel}>Express</Text>
-              <Text style={styles.deliveryTimeLabel}>
-                {DELIVERY_OPTIONS.Express.label}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Schedule */}
-            <TouchableOpacity
-              style={[
-                styles.deliveryCard,
-                deliveryType === "Schedule" && styles.deliveryCardActive,
-              ]}
-              onPress={() => setDeliveryType("Schedule")}
-            >
-              <Ionicons
-                name="time-outline"
-                size={24}
-                color={deliveryType === "Schedule" ? "#27ae60" : "#bdc3c7"}
-              />
-              <Text style={styles.deliveryTypeLabel}>Schedule</Text>
-              <Text style={styles.deliveryTimeLabel}>
-                {DELIVERY_OPTIONS.Schedule.label}
-              </Text>
-            </TouchableOpacity>
+            {Object.keys(DELIVERY_OPTIONS).map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.deliveryCard,
+                  deliveryType === type && styles.deliveryCardActive,
+                ]}
+                onPress={() => setDeliveryType(type)}
+              >
+                <Ionicons
+                  name={
+                    type === "Standard"
+                      ? "bicycle-outline"
+                      : type === "Express"
+                        ? "rocket-outline"
+                        : "calendar-outline"
+                  }
+                  size={24}
+                  color={deliveryType === type ? "#27ae60" : "#bdc3c7"}
+                />
+                <Text style={styles.deliveryTypeLabel}>{type}</Text>
+                <Text style={styles.deliveryTimeLabel}>
+                  {DELIVERY_OPTIONS[type].label}
+                </Text>
+                <Text style={styles.deliveryPriceLabel}>
+                  {formatRupiah(DELIVERY_OPTIONS[type].price)}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* 4. Payment Method (Bank Indonesia & E-Wallet) */}
+        {/* 4. Metode Pembayaran (Horizontal Scroll) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <Text style={styles.sectionTitle}>Metode Pembayaran</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {PAYMENT_METHODS.map((method) => (
               <TouchableOpacity
@@ -226,7 +223,7 @@ const CheckoutScreen = ({ navigation }) => {
                   {method.name}
                 </Text>
 
-                {/* Indikator Terpilih */}
+                {/* Indikator Pilihan (Lingkaran Hijau) */}
                 <View
                   style={[
                     styles.radioCircle,
@@ -243,18 +240,18 @@ const CheckoutScreen = ({ navigation }) => {
         </View>
       </ScrollView>
 
-      {/* 5. Cost Details & Button */}
+      {/* 5. Bottom Sheet (Total & Tombol) */}
       <View style={styles.bottomSheet}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Subtotal</Text>
           <Text style={styles.summaryValue}>{formatRupiah(subtotal)}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Delivery ({deliveryType})</Text>
+          <Text style={styles.summaryLabel}>Ongkos Kirim ({deliveryType})</Text>
           <Text style={styles.summaryValue}>{formatRupiah(deliveryFee)}</Text>
         </View>
         <View style={[styles.summaryRow, styles.totalRow]}>
-          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalLabel}>Total Bayar</Text>
           <Text style={styles.totalValue}>{formatRupiah(total)}</Text>
         </View>
 
@@ -262,7 +259,7 @@ const CheckoutScreen = ({ navigation }) => {
           style={styles.placeOrderBtn}
           onPress={handlePlaceOrder}
         >
-          <Text style={styles.placeOrderText}>Place Order</Text>
+          <Text style={styles.placeOrderText}>Buat Pesanan</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -290,6 +287,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
+  // Cards
   summaryCard: {
     backgroundColor: "#fff",
     padding: 15,
@@ -316,6 +314,7 @@ const styles = StyleSheet.create({
   },
   addressText: { fontSize: 13, color: "#7f8c8d", marginBottom: 2 },
 
+  // Delivery Grid
   deliveryContainer: { flexDirection: "row", justifyContent: "space-between" },
   deliveryCard: {
     width: "31%",
@@ -334,8 +333,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   deliveryTimeLabel: { fontSize: 10, color: "#b2bec3", marginTop: 2 },
+  deliveryPriceLabel: {
+    fontSize: 11,
+    color: "#27ae60",
+    fontWeight: "bold",
+    marginTop: 4,
+  },
 
-  // Payment Style
+  // Payment Cards
   paymentCard: {
     width: 140,
     height: 100,
@@ -351,6 +356,8 @@ const styles = StyleSheet.create({
   paymentCardActive: { borderColor: "#27ae60", backgroundColor: "#e9f7ef" },
   paymentLogo: { width: 70, height: 35, marginBottom: 5 },
   paymentText: { fontSize: 11, color: "#333" },
+
+  // Radio Button
   radioCircle: {
     position: "absolute",
     top: 8,
@@ -371,6 +378,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#27ae60",
   },
 
+  // Bottom Sheet
   bottomSheet: {
     position: "absolute",
     bottom: 0,

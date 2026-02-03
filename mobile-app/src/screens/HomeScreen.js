@@ -13,18 +13,17 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useCart } from "../context/CartContext"; // <--- Tetap pakai Context untuk Badge
+import { useCart } from "../context/CartContext"; // Import Context
 
 const { width } = Dimensions.get("window");
 
 const HomeScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState("Most Ordered");
   const [activeBanner, setActiveBanner] = useState(0);
-
-  // 1. STATE UNTUK PENCARIAN
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { totalItems } = useCart(); // Ambil jumlah item untuk badge
+  // Ambil data totalItems untuk Badge Cart
+  const { totalItems } = useCart();
 
   // --- DATA DUMMY ---
   const banners = [
@@ -78,7 +77,7 @@ const HomeScreen = ({ navigation }) => {
     },
   ];
 
-  // 2. LOGIKA FILTER PENCARIAN
+  // Logic Filter Pencarian
   const filteredProducts = products.filter((item) => {
     return item.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -113,7 +112,7 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* 3. Search Bar (SUDAH AKTIF) */}
+        {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchInputWrapper}>
             <Ionicons
@@ -125,10 +124,9 @@ const HomeScreen = ({ navigation }) => {
             <TextInput
               placeholder="Cari buah & sayur..."
               style={styles.searchInput}
-              value={searchQuery} // Hubungkan ke State
-              onChangeText={(text) => setSearchQuery(text)} // Update State saat ngetik
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
-            {/* Tombol Clear (X) muncul kalau ada ketikan */}
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
                 <Ionicons name="close-circle" size={18} color="#bdc3c7" />
@@ -198,7 +196,7 @@ const HomeScreen = ({ navigation }) => {
           ))}
         </ScrollView>
 
-        {/* 4. Product Grid (Render Hasil Filter) */}
+        {/* Product Grid */}
         <View style={styles.gridContainer}>
           {filteredProducts.length > 0 ? (
             filteredProducts.map((item) => (
@@ -227,7 +225,6 @@ const HomeScreen = ({ navigation }) => {
               </TouchableOpacity>
             ))
           ) : (
-            // Tampilan jika barang tidak ditemukan
             <View
               style={{ width: "100%", alignItems: "center", marginTop: 20 }}
             >
@@ -240,9 +237,10 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </ScrollView>
 
-      {/* Bottom Navbar */}
+      {/* --- BOTTOM NAVIGATION BAR --- */}
       <View style={styles.bottomNavContainer}>
         <View style={styles.bottomNav}>
+          {/* 1. Home (Aktif) */}
           <TouchableOpacity style={styles.navItem}>
             <Ionicons name="home" size={24} color="#27ae60" />
             <Text
@@ -252,6 +250,7 @@ const HomeScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
 
+          {/* 2. Cart (Dengan Badge) */}
           <TouchableOpacity
             style={styles.navItem}
             onPress={() => navigation.navigate("Cart")}
@@ -267,11 +266,16 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.navText}>Cart</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.navItem}>
+          {/* 3. Orders (SUDAH AKTIF SEKARANG) */}
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => navigation.navigate("Orders")} // <--- Navigasi ke OrdersScreen
+          >
             <Ionicons name="document-text-outline" size={24} color="#bdc3c7" />
             <Text style={styles.navText}>Orders</Text>
           </TouchableOpacity>
 
+          {/* 4. Profile */}
           <TouchableOpacity style={styles.navItem}>
             <Ionicons name="person-outline" size={24} color="#bdc3c7" />
             <Text style={styles.navText}>Profile</Text>

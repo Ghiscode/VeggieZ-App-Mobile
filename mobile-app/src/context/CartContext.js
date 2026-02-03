@@ -1,46 +1,67 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // 1. Import ini
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true); // Status loading awal
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 2. LOAD DATA: Ambil dari Memori HP saat aplikasi pertama dibuka
+  // --- STATE ALAMAT (BARU) ---
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    name: "Michael Anderson",
+    phone: "+62 812-3456-7890",
+    address: "Jl. Sudirman No. 45, Jakarta Pusat",
+    landmark: "Apartment 15C",
+    city: "DKI Jakarta, 10220",
+  });
+
+  // LOAD DATA
   useEffect(() => {
-    const loadCart = async () => {
+    const loadData = async () => {
       try {
         const storedCart = await AsyncStorage.getItem("@user_cart");
-        if (storedCart) {
-          setCartItems(JSON.parse(storedCart));
-        }
+        const storedOrders = await AsyncStorage.getItem("@user_orders");
+        if (storedCart) setCartItems(JSON.parse(storedCart));
+        if (storedOrders) setOrders(JSON.parse(storedOrders));
       } catch (error) {
-        console.error("Gagal memuat keranjang:", error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
-    loadCart();
+    loadData();
   }, []);
 
-  // 3. SAVE DATA: Simpan ke Memori HP setiap kali cartItems berubah
+  // SAVE DATA
   useEffect(() => {
-    // Jangan simpan kalau masih loading awal (biar ga nimpah data kosong)
     if (!loading) {
       const saveCart = async () => {
         try {
           await AsyncStorage.setItem("@user_cart", JSON.stringify(cartItems));
-        } catch (error) {
-          console.error("Gagal menyimpan keranjang:", error);
+        } catch (e) {
+          console.error(e);
         }
       };
       saveCart();
     }
   }, [cartItems, loading]);
 
-  // --- FUNGSI-FUNGSI LOGIKA (SAMA SEPERTI SEBELUMNYA) ---
+  useEffect(() => {
+    if (!loading) {
+      const saveOrders = async () => {
+        try {
+          await AsyncStorage.setItem("@user_orders", JSON.stringify(orders));
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      saveOrders();
+    }
+  }, [orders, loading]);
 
+  // LOGIC
   const addToCart = (product, quantity) => {
     setCartItems((currItems) => {
       const existingItem = currItems.find((item) => item.id === product.id);
@@ -51,7 +72,6 @@ export const CartProvider = ({ children }) => {
             : item,
         );
       } else {
-        // Pastikan harga bersih
         const priceString = product.price ? product.price.toString() : "0";
         const priceNumber = parseInt(priceString.replace(/[^0-9]/g, ""));
         return [...currItems, { ...product, price: priceNumber, quantity }];
@@ -59,21 +79,39 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  const removeFromCart = (id) => {
-    setCartItems((currItems) => currItems.filter((item) => item.id !== id));
-  };
+  const removeFromCart = (id) =>
+    setCartItems((curr) => curr.filter((item) => item.id !== id));
 
   const updateQuantity = (id, type) => {
-    setCartItems((currItems) => {
-      return currItems.map((item) => {
+    setCartItems((curr) =>
+      curr.map((item) => {
         if (item.id === id) {
-          const newQuantity =
-            type === "plus" ? item.quantity + 1 : item.quantity - 1;
-          return { ...item, quantity: newQuantity > 0 ? newQuantity : 1 };
+          const qty = type === "plus" ? item.quantity + 1 : item.quantity - 1;
+          return { ...item, quantity: qty > 0 ? qty : 1 };
         }
         return item;
-      });
-    });
+      }),
+    );
+  };
+
+  const placeOrder = () => {
+    const newOrder = {
+      id: "ORD-" + new Date().getTime(),
+      date: new Date().toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      items: cartItems,
+      totalPrice:
+        cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) +
+        10000,
+      status: "Sedang Dikirim",
+      shippingAddress: deliveryAddress, // Simpan alamat di order juga
+    };
+    setOrders((prev) => [newOrder, ...prev]);
+    setCartItems([]);
   };
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -86,6 +124,10 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         updateQuantity,
         totalItems,
+        orders,
+        placeOrder,
+        deliveryAddress,
+        setDeliveryAddress, // <-- EXPORT INI
       }}
     >
       {children}
