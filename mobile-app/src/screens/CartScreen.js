@@ -11,16 +11,14 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useCart } from "../context/CartContext"; // <--- Import Context
+import { useCart } from "../context/CartContext";
 
 const CartScreen = ({ navigation }) => {
-  // Ambil Data & Fungsi dari Context (BUKAN DUMMY LAGI)
   const { cartItems, removeFromCart, updateQuantity } = useCart();
 
   const [subtotal, setSubtotal] = useState(0);
   const deliveryFee = 10000;
 
-  // Hitung Subtotal Real-time
   useEffect(() => {
     let tempTotal = 0;
     cartItems.forEach((item) => {
@@ -47,7 +45,6 @@ const CartScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -127,7 +124,6 @@ const CartScreen = ({ navigation }) => {
         )}
       </ScrollView>
 
-      {/* Summary */}
       {cartItems.length > 0 && (
         <View style={styles.bottomSheet}>
           <View style={styles.summaryRow}>

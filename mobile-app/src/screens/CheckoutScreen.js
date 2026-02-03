@@ -14,10 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCart } from "../context/CartContext";
 
 const CheckoutScreen = ({ navigation }) => {
-  // Ambil data & fungsi dari Global Context
   const { cartItems, placeOrder, deliveryAddress } = useCart();
 
-  // --- STATE PENGIRIMAN ---
   const [deliveryType, setDeliveryType] = useState("Standard");
   const DELIVERY_OPTIONS = {
     Standard: { price: 10000, label: "1-2 Hari" },
@@ -25,7 +23,6 @@ const CheckoutScreen = ({ navigation }) => {
     Schedule: { price: 15000, label: "Atur Waktu" },
   };
 
-  // --- STATE PEMBAYARAN ---
   const [selectedPayment, setSelectedPayment] = useState("BCA");
   const PAYMENT_METHODS = [
     {
@@ -56,7 +53,6 @@ const CheckoutScreen = ({ navigation }) => {
     },
   ];
 
-  // --- KALKULASI HARGA ---
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -67,16 +63,12 @@ const CheckoutScreen = ({ navigation }) => {
   const formatRupiah = (num) =>
     "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
-  // --- HANDLE PLACE ORDER ---
   const handlePlaceOrder = () => {
-    // 1. Cek Keranjang
     if (cartItems.length === 0)
       return Alert.alert("Error", "Keranjang kosong!");
 
-    // 2. Simpan Pesanan ke Riwayat
     placeOrder();
 
-    // 3. Pindah ke Halaman Sukses (Pakai replace biar gak bisa back ke checkout)
     navigation.replace("OrderSuccess");
   };
 
@@ -84,7 +76,6 @@ const CheckoutScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -102,7 +93,6 @@ const CheckoutScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 180 }}
       >
-        {/* 1. Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ringkasan Pesanan</Text>
           <TouchableOpacity
@@ -116,7 +106,6 @@ const CheckoutScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* 2. Alamat Pengiriman (Dinamis dari Context) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Alamat Pengiriman</Text>
           <View style={styles.addressCard}>
@@ -137,7 +126,6 @@ const CheckoutScreen = ({ navigation }) => {
             <Text style={styles.addressText}>{deliveryAddress.address}</Text>
             <Text style={styles.addressText}>{deliveryAddress.city}</Text>
 
-            {/* Tampilkan Patokan jika ada */}
             {deliveryAddress.landmark !== "" && (
               <Text
                 style={[
@@ -157,7 +145,6 @@ const CheckoutScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* 3. Tipe Pengiriman (Pilihan Dinamis) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tipe Pengiriman</Text>
           <View style={styles.deliveryContainer}>
@@ -193,7 +180,6 @@ const CheckoutScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* 4. Metode Pembayaran (Horizontal Scroll) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Metode Pembayaran</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -223,7 +209,6 @@ const CheckoutScreen = ({ navigation }) => {
                   {method.name}
                 </Text>
 
-                {/* Indikator Pilihan (Lingkaran Hijau) */}
                 <View
                   style={[
                     styles.radioCircle,
@@ -240,7 +225,6 @@ const CheckoutScreen = ({ navigation }) => {
         </View>
       </ScrollView>
 
-      {/* 5. Bottom Sheet (Total & Tombol) */}
       <View style={styles.bottomSheet}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Subtotal</Text>
@@ -287,7 +271,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // Cards
   summaryCard: {
     backgroundColor: "#fff",
     padding: 15,
@@ -314,7 +297,6 @@ const styles = StyleSheet.create({
   },
   addressText: { fontSize: 13, color: "#7f8c8d", marginBottom: 2 },
 
-  // Delivery Grid
   deliveryContainer: { flexDirection: "row", justifyContent: "space-between" },
   deliveryCard: {
     width: "31%",
@@ -340,7 +322,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Payment Cards
   paymentCard: {
     width: 140,
     height: 100,
@@ -357,7 +338,6 @@ const styles = StyleSheet.create({
   paymentLogo: { width: 70, height: 35, marginBottom: 5 },
   paymentText: { fontSize: 11, color: "#333" },
 
-  // Radio Button
   radioCircle: {
     position: "absolute",
     top: 8,
@@ -378,7 +358,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#27ae60",
   },
 
-  // Bottom Sheet
   bottomSheet: {
     position: "absolute",
     bottom: 0,

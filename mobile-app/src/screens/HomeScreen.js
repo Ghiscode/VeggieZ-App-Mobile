@@ -1,4 +1,11 @@
-import React, { useState } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
 import {
   View,
   Text,
@@ -11,78 +18,155 @@ import {
   StatusBar,
   FlatList,
   Dimensions,
+  Alert,
+  ActivityIndicator,
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useCart } from "../context/CartContext"; // Import Context
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { db } from "../config/firebase";
+import { ref, onValue } from "firebase/database";
 
 const { width } = Dimensions.get("window");
+
+const imageMap = {
+  pisang: require("../../assets/images/pisang.png"),
+  wortel: require("../../assets/images/wortel.png"),
+  apel: require("../../assets/images/apel.png"),
+  kentang: require("../../assets/images/kentang.png"),
+  timun: require("../../assets/images/timun.png"),
+  jeruk: require("../../assets/images/jeruk.png"),
+  default: require("../../assets/images/pisang.png"),
+};
+
+const formatRupiah = (price) => {
+  return "Rp " + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const AnimatedProductCard = memo(({ item, index, navigation }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: 6,
+        tension: 40,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [index]);
+
+  const displayImage = imageMap[item.imageType] || imageMap["default"];
+  const displayPrice = formatRupiah(item.price);
+
+  return (
+    <Animated.View
+      style={[
+        styles.card,
+        { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+      ]}
+    >
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        onPress={() =>
+          navigation.navigate("ProductDetail", {
+            product: { ...item, image: displayImage, price: displayPrice },
+          })
+        }
+      >
+        <View style={styles.imageWrapper}>
+          <Image
+            source={displayImage}
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={styles.productName}>{item.name}</Text>
+        <Text style={styles.productWeight}>{item.weight}</Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.productPrice}>{displayPrice}</Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Ionicons name="add" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+});
 
 const HomeScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState("Most Ordered");
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Ambil data totalItems untuk Badge Cart
-  const { totalItems } = useCart();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // --- DATA DUMMY ---
+  const { totalItems } = useCart();
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    const starCountRef = ref(db, "products/");
+    const unsubscribe = onValue(
+      starCountRef,
+      (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const productsList = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }));
+          setProducts(productsList);
+        } else {
+          setProducts([]);
+        }
+        setLoading(false);
+      },
+      (error) => {
+        console.error(error);
+        setLoading(false);
+      },
+    );
+    return () => unsubscribe();
+  }, []);
+
   const banners = [
     { id: "1", image: require("../../assets/images/banner1.png") },
     { id: "2", image: require("../../assets/images/banner2.png") },
     { id: "3", image: require("../../assets/images/banner3.png") },
   ];
 
-  const products = [
-    {
-      id: "1",
-      name: "Pisang Cavendish",
-      price: "Rp 22.000",
-      weight: "1kg",
-      image: require("../../assets/images/pisang.png"),
-    },
-    {
-      id: "2",
-      name: "Wortel Import",
-      price: "Rp 15.000",
-      weight: "1kg",
-      image: require("../../assets/images/wortel.png"),
-    },
-    {
-      id: "3",
-      name: "Apel Fuji",
-      price: "Rp 45.000",
-      weight: "1kg",
-      image: require("../../assets/images/apel.png"),
-    },
-    {
-      id: "4",
-      name: "Kentang Dieng",
-      price: "Rp 18.000",
-      weight: "1kg",
-      image: require("../../assets/images/kentang.png"),
-    },
-    {
-      id: "5",
-      name: "Timun Jepang",
-      price: "Rp 8.000",
-      weight: "500gr",
-      image: require("../../assets/images/timun.png"),
-    },
-    {
-      id: "6",
-      name: "Jeruk Sunkist",
-      price: "Rp 28.000",
-      weight: "1kg",
-      image: require("../../assets/images/jeruk.png"),
-    },
-  ];
+  const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      return item.name
+        ? item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        : false;
+    });
+  }, [products, searchQuery]);
 
-  // Logic Filter Pencarian
-  const filteredProducts = products.filter((item) => {
-    return item.name.toLowerCase().includes(searchQuery.toLowerCase());
-  });
-
-  const tabs = ["Most Ordered", "In Season", "Fresh Deals", "Best Value"];
+  const handleLogout = useCallback(() => {
+    Alert.alert("Konfirmasi Logout", "Yakin ingin keluar?", [
+      { text: "Batal", style: "cancel" },
+      {
+        text: "Keluar",
+        style: "destructive",
+        onPress: () => {
+          logout();
+          navigation.replace("Login");
+        },
+      },
+    ]);
+  }, [logout, navigation]);
 
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -98,7 +182,6 @@ const HomeScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
-        {/* Header Location */}
         <View style={styles.header}>
           <View>
             <Text style={styles.headerLabel}>Lokasi Kamu</Text>
@@ -112,7 +195,6 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchInputWrapper}>
             <Ionicons
@@ -138,7 +220,6 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Banner Carousel */}
         <View>
           <FlatList
             data={banners}
@@ -175,54 +256,24 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Text Tabs */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabScroll}
-        >
-          {tabs.map((tab, index) => (
-            <TouchableOpacity key={index} onPress={() => setActiveTab(tab)}>
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === tab && styles.tabTextActive,
-                ]}
-              >
-                {tab}
-              </Text>
-              {activeTab === tab && <View style={styles.activeLine} />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Product Grid */}
         <View style={styles.gridContainer}>
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((item) => (
-              <TouchableOpacity
+          {loading ? (
+            <View
+              style={{ width: "100%", alignItems: "center", marginTop: 50 }}
+            >
+              <ActivityIndicator size="large" color="#27ae60" />
+              <Text style={{ marginTop: 10, color: "#7f8c8d" }}>
+                Mengambil data...
+              </Text>
+            </View>
+          ) : filteredProducts.length > 0 ? (
+            filteredProducts.map((item, index) => (
+              <AnimatedProductCard
                 key={item.id}
-                style={styles.card}
-                onPress={() =>
-                  navigation.navigate("ProductDetail", { product: item })
-                }
-              >
-                <View style={styles.imageWrapper}>
-                  <Image
-                    source={item.image}
-                    style={styles.productImage}
-                    resizeMode="contain"
-                  />
-                </View>
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productWeight}>{item.weight}</Text>
-                <View style={styles.priceRow}>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                  <TouchableOpacity style={styles.addButton}>
-                    <Ionicons name="add" size={20} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
+                item={item}
+                index={index}
+                navigation={navigation}
+              />
             ))
           ) : (
             <View
@@ -237,10 +288,8 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </ScrollView>
 
-      {/* --- BOTTOM NAVIGATION BAR --- */}
       <View style={styles.bottomNavContainer}>
         <View style={styles.bottomNav}>
-          {/* 1. Home (Aktif) */}
           <TouchableOpacity style={styles.navItem}>
             <Ionicons name="home" size={24} color="#27ae60" />
             <Text
@@ -249,8 +298,6 @@ const HomeScreen = ({ navigation }) => {
               Home
             </Text>
           </TouchableOpacity>
-
-          {/* 2. Cart (Dengan Badge) */}
           <TouchableOpacity
             style={styles.navItem}
             onPress={() => navigation.navigate("Cart")}
@@ -265,20 +312,16 @@ const HomeScreen = ({ navigation }) => {
             </View>
             <Text style={styles.navText}>Cart</Text>
           </TouchableOpacity>
-
-          {/* 3. Orders (SUDAH AKTIF SEKARANG) */}
           <TouchableOpacity
             style={styles.navItem}
-            onPress={() => navigation.navigate("Orders")} // <--- Navigasi ke OrdersScreen
+            onPress={() => navigation.navigate("Orders")}
           >
             <Ionicons name="document-text-outline" size={24} color="#bdc3c7" />
             <Text style={styles.navText}>Orders</Text>
           </TouchableOpacity>
-
-          {/* 4. Profile */}
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="person-outline" size={24} color="#bdc3c7" />
-            <Text style={styles.navText}>Profile</Text>
+          <TouchableOpacity style={styles.navItem} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={24} color="#e74c3c" />
+            <Text style={[styles.navText, { color: "#e74c3c" }]}>Logout</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -346,22 +389,6 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
   activeDotBanner: { backgroundColor: "#27ae60", width: 20 },
   inactiveDot: { backgroundColor: "#dfe6e9" },
-  tabScroll: { paddingLeft: 20, marginBottom: 20, maxHeight: 40 },
-  tabText: {
-    fontSize: 16,
-    color: "#bdc3c7",
-    marginRight: 30,
-    fontWeight: "600",
-  },
-  tabTextActive: { color: "#f39c12", fontWeight: "bold" },
-  activeLine: {
-    width: 20,
-    height: 3,
-    backgroundColor: "#f39c12",
-    marginTop: 4,
-    alignSelf: "center",
-    marginRight: 30,
-  },
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",

@@ -18,7 +18,6 @@ import { useCart } from "../context/CartContext";
 const EditAddressScreen = ({ navigation }) => {
   const { deliveryAddress, setDeliveryAddress } = useCart();
 
-  // Isi form dengan data yang sudah ada
   const [name, setName] = useState(deliveryAddress.name);
   const [phone, setPhone] = useState(deliveryAddress.phone);
   const [address, setAddress] = useState(deliveryAddress.address);
@@ -31,14 +30,13 @@ const EditAddressScreen = ({ navigation }) => {
     }
 
     setDeliveryAddress({ name, phone, address, landmark, city });
-    navigation.goBack(); // Kembali ke Checkout
+    navigation.goBack();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -57,7 +55,6 @@ const EditAddressScreen = ({ navigation }) => {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.formContainer}>
-          {/* Nama */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Nama Penerima</Text>
             <TextInput
@@ -68,7 +65,6 @@ const EditAddressScreen = ({ navigation }) => {
             />
           </View>
 
-          {/* No HP */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Nomor Telepon</Text>
             <TextInput
@@ -80,7 +76,6 @@ const EditAddressScreen = ({ navigation }) => {
             />
           </View>
 
-          {/* Kota */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Kota & Kode Pos</Text>
             <TextInput
@@ -91,7 +86,6 @@ const EditAddressScreen = ({ navigation }) => {
             />
           </View>
 
-          {/* Alamat Lengkap & Maps */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Alamat Lengkap</Text>
             <TextInput
@@ -101,7 +95,7 @@ const EditAddressScreen = ({ navigation }) => {
               placeholder="Jalan, No. Rumah, RT/RW"
               multiline
             />
-            {/* Tombol Dummy Google Maps */}
+
             <TouchableOpacity
               style={styles.mapButton}
               onPress={() =>
@@ -115,7 +109,6 @@ const EditAddressScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Patokan */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Patokan / Catatan (Opsional)</Text>
             <TextInput

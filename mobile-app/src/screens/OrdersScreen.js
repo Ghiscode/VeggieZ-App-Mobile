@@ -19,7 +19,6 @@ const OrdersScreen = ({ navigation }) => {
 
   const renderOrder = ({ item }) => (
     <View style={styles.orderCard}>
-      {/* Header Kartu: ID & Status */}
       <View style={styles.cardHeader}>
         <View>
           <Text style={styles.orderId}>{item.id}</Text>
@@ -32,7 +31,6 @@ const OrdersScreen = ({ navigation }) => {
 
       <View style={styles.divider} />
 
-      {/* List Barang Singkat */}
       <View style={styles.itemsContainer}>
         {item.items.map((prod, index) => (
           <Text key={index} style={styles.itemText}>
@@ -43,13 +41,12 @@ const OrdersScreen = ({ navigation }) => {
 
       <View style={styles.divider} />
 
-      {/* Footer: Total & Alamat (Jika ada) */}
       <View style={styles.cardFooter}>
         <View>
           <Text style={styles.totalLabel}>Total Belanja</Text>
           <Text style={styles.totalValue}>{formatRupiah(item.totalPrice)}</Text>
         </View>
-        {/* Tombol Aksi */}
+
         <TouchableOpacity
           style={styles.reorderBtn}
           onPress={() => alert("Fitur Beli Lagi segera hadir!")}
@@ -58,7 +55,6 @@ const OrdersScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Menampilkan Alamat Pengiriman di Kartu Order (Opsional) */}
       {item.shippingAddress && (
         <View
           style={{
@@ -80,7 +76,6 @@ const OrdersScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}

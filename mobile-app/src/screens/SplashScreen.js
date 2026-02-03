@@ -6,15 +6,12 @@ import { CommonActions } from "@react-navigation/native";
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     const checkLogin = async () => {
-      // 1. Tahan 3 detik (biar logo VeggieZ tampil estetik)
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      // 2. Cek apakah ada Token di memori HP?
       try {
         const userToken = await AsyncStorage.getItem("userToken");
 
         if (userToken) {
-          // KASUS A: Sudah Login -> Langsung ke Home (Reset navigasi biar gak bisa back ke splash)
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
@@ -22,7 +19,6 @@ const SplashScreen = ({ navigation }) => {
             }),
           );
         } else {
-          // KASUS B: Belum Login -> Ke halaman Login
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
@@ -32,7 +28,7 @@ const SplashScreen = ({ navigation }) => {
         }
       } catch (e) {
         console.error("Gagal membaca token:", e);
-        // Kalau error, aman-nya lempar ke Login aja
+
         navigation.replace("Login");
       }
     };
@@ -42,9 +38,7 @@ const SplashScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Bagian Logo */}
       <View style={styles.logoContainer}>
-        {/* Nanti bisa diganti <Image> kalau sudah ada aset gambar */}
         <Text style={styles.logoIcon}>🥦</Text>
         <Text style={styles.logoText}>VeggieZ</Text>
       </View>
@@ -76,7 +70,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 40,
     fontWeight: "bold",
-    color: "#2ecc71", // Hijau VeggieZ
+    color: "#2ecc71",
     letterSpacing: 2,
   },
   tagline: {

@@ -8,7 +8,6 @@ export const CartProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- STATE ALAMAT (BARU) ---
   const [deliveryAddress, setDeliveryAddress] = useState({
     name: "Michael Anderson",
     phone: "+62 812-3456-7890",
@@ -17,7 +16,6 @@ export const CartProvider = ({ children }) => {
     city: "DKI Jakarta, 10220",
   });
 
-  // LOAD DATA
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -34,7 +32,6 @@ export const CartProvider = ({ children }) => {
     loadData();
   }, []);
 
-  // SAVE DATA
   useEffect(() => {
     if (!loading) {
       const saveCart = async () => {
@@ -61,7 +58,6 @@ export const CartProvider = ({ children }) => {
     }
   }, [orders, loading]);
 
-  // LOGIC
   const addToCart = (product, quantity) => {
     setCartItems((currItems) => {
       const existingItem = currItems.find((item) => item.id === product.id);
@@ -108,7 +104,7 @@ export const CartProvider = ({ children }) => {
         cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) +
         10000,
       status: "Sedang Dikirim",
-      shippingAddress: deliveryAddress, // Simpan alamat di order juga
+      shippingAddress: deliveryAddress,
     };
     setOrders((prev) => [newOrder, ...prev]);
     setCartItems([]);
@@ -127,7 +123,7 @@ export const CartProvider = ({ children }) => {
         orders,
         placeOrder,
         deliveryAddress,
-        setDeliveryAddress, // <-- EXPORT INI
+        setDeliveryAddress,
       }}
     >
       {children}

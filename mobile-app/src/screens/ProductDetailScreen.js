@@ -12,19 +12,18 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useCart } from "../context/CartContext"; // <--- Import Context
+import { useCart } from "../context/CartContext";
 
 const ProductDetailScreen = ({ route, navigation }) => {
   const { product } = route.params;
   const [quantity, setQuantity] = useState(1);
-  const { addToCart, totalItems } = useCart(); // <--- Ambil fungsi dari Context
+  const { addToCart, totalItems } = useCart();
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
     Alert.alert("Sukses", "Produk berhasil masuk keranjang!");
   };
 
-  // --- DATA DUMMY PRODUK LAIN ---
   const allProducts = [
     {
       id: "1",
@@ -74,7 +73,6 @@ const ProductDetailScreen = ({ route, navigation }) => {
     (item) => !item.name.includes(product.name),
   );
 
-  // Helper Functions
   const handleIncrement = () => setQuantity((prev) => prev + 1);
   const handleDecrement = () => {
     if (quantity > 1) setQuantity((prev) => prev - 1);
@@ -88,7 +86,6 @@ const ProductDetailScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -102,7 +99,7 @@ const ProductDetailScreen = ({ route, navigation }) => {
           onPress={() => navigation.navigate("Cart")}
         >
           <Ionicons name="cart-outline" size={24} color="#333" />
-          {/* Badge Real-time */}
+
           {totalItems > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{totalItems}</Text>
@@ -115,7 +112,6 @@ const ProductDetailScreen = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Gambar */}
         <View style={styles.imageContainer}>
           <Image
             source={product.image}
@@ -124,7 +120,6 @@ const ProductDetailScreen = ({ route, navigation }) => {
           />
         </View>
 
-        {/* Info & Counter */}
         <View style={styles.contentContainer}>
           <View style={styles.titleRow}>
             <View>
@@ -151,7 +146,6 @@ const ProductDetailScreen = ({ route, navigation }) => {
             </View>
           </View>
 
-          {/* Deskripsi & Related (Saya persingkat codenya karena sama) */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Deskripsi</Text>
             <Text style={styles.descriptionText}>
@@ -189,13 +183,12 @@ const ProductDetailScreen = ({ route, navigation }) => {
         </View>
       </ScrollView>
 
-      {/* Bottom Bar */}
       <View style={styles.bottomBar}>
         <View>
           <Text style={styles.totalLabel}>Total Harga</Text>
           <Text style={styles.totalPrice}>Rp {totalPrice}</Text>
         </View>
-        {/* Panggil fungsi Add To Cart Asli */}
+
         <TouchableOpacity style={styles.addToCartBtn} onPress={handleAddToCart}>
           <Text style={styles.addToCartText}>Tambah ke Keranjang</Text>
         </TouchableOpacity>

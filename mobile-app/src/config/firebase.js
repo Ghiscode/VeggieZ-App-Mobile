@@ -1,10 +1,7 @@
-// src/firebaseConfig.js
-import { initializeApp } from "firebase/app";
-// Import service Auth & Firestore agar bisa dipakai
+import { initializeApp, getApps, getApp, deleteApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 
-// Konfigurasi dari akun Firebase kamu
 const firebaseConfig = {
   apiKey: "AIzaSyANhDkSANOxnwZ6erxfr_sq9EjaNKFF8MI",
   authDomain: "veggiez---mobile.firebaseapp.com",
@@ -12,11 +9,17 @@ const firebaseConfig = {
   storageBucket: "veggiez---mobile.firebasestorage.app",
   messagingSenderId: "655369752773",
   appId: "1:655369752773:web:de1a5e19ba7003f0d1e0ac",
+  databaseURL:
+    "https://veggiez---mobile-default-rtdb.asia-southeast1.firebasedatabase.app",
 };
 
-// 1. Nyalakan Firebase
-const app = initializeApp(firebaseConfig);
+let app;
 
-// 2. Siapkan fitur Auth & Database untuk diexport
+if (getApps().length > 0) {
+  app = getApp();
+} else {
+  app = initializeApp(firebaseConfig);
+}
+
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = getDatabase(app);

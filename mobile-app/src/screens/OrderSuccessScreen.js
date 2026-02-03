@@ -18,33 +18,29 @@ const OrderSuccessScreen = ({ navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       <View style={styles.content}>
-        {/* 1. Ikon Centang Besar */}
         <View style={styles.iconContainer}>
           <Ionicons name="checkmark" size={60} color="#fff" />
         </View>
 
-        {/* 2. Teks Konfirmasi */}
         <Text style={styles.title}>Your Order is Confirmed !</Text>
         <Text style={styles.subtitle}>
           Your order is being packed and will arrive soon.{"\n"}Fruits and
           veggies coming right up!
         </Text>
 
-        {/* 3. Tombol Track Order */}
         <TouchableOpacity
           style={styles.trackButton}
-          onPress={() => navigation.navigate("Orders")} // Ke Halaman Orders
+          onPress={() => navigation.navigate("Orders")}
         >
           <Text style={styles.trackButtonText}>Track Order</Text>
         </TouchableOpacity>
 
-        {/* 4. Tombol Back to Home */}
         <TouchableOpacity
           style={styles.homeButton}
           onPress={() =>
             navigation.reset({
               index: 0,
-              routes: [{ name: "Home" }], // Reset agar tidak bisa 'Back' ke Checkout
+              routes: [{ name: "Home" }],
             })
           }
         >
@@ -68,7 +64,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  // Gaya Ikon Lingkaran Hijau
   iconContainer: {
     width: 120,
     height: 120,
@@ -77,7 +72,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 30,
-    // Efek Bayangan (Shadow)
+
     shadowColor: "#27ae60",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,

@@ -1,3 +1,3 @@
-// File: mobile-app/App.js (Jembatan)
-import App from "./src/App"; // Memanggil otak utama di dalam folder src
+
+import App from "./src/App"; 
 export default App;
