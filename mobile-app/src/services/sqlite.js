@@ -8,9 +8,10 @@ export const initDB = async () => {
   try {
     const db = await getDB();
 
+    //3. Local Data Storage
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
-      CREATE TABLE IF NOT EXISTS orders (
+      CREATE TABLE IF NOT EXISTS orders ( 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT,
         totalPrice TEXT,
@@ -18,9 +19,9 @@ export const initDB = async () => {
         status TEXT
       );
     `);
-    console.log("✅ Tabel Orders berhasil dibuat!");
+    console.log("Tabel Orders berhasil dibuat!");
   } catch (error) {
-    console.error("❌ Gagal init DB:", error);
+    console.error("Gagal init DB:", error);
   }
 };
 
@@ -43,7 +44,7 @@ export const addOrderToLocal = async (
     );
     return result;
   } catch (error) {
-    console.error("❌ Gagal simpan order:", error);
+    console.error("Gagal simpan order:", error);
     throw error;
   }
 };
@@ -57,7 +58,7 @@ export const getLocalOrders = async () => {
     );
     return allRows;
   } catch (error) {
-    console.error("❌ Gagal ambil order:", error);
+    console.error("Gagal ambil order:", error);
     return [];
   }
 };

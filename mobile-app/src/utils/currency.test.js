@@ -1,3 +1,4 @@
+//6. Testing
 import { formatRupiah } from "./currency";
 
 describe("Testing Fungsi Mata Uang", () => {

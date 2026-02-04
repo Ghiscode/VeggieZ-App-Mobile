@@ -32,11 +32,20 @@ const { width } = Dimensions.get("window");
 
 const imageMap = {
   pisang: require("../../assets/images/pisang.png"),
-  wortel: require("../../assets/images/wortel.png"),
   apel: require("../../assets/images/apel.png"),
+  jeruk: require("../../assets/images/jeruk.png"),
+  anggur: require("../../assets/images/anggur.png"),
+  strawberry: require("../../assets/images/strawberry.png"),
+  semangka: require("../../assets/images/semangka.png"),
+
+  wortel: require("../../assets/images/wortel.png"),
   kentang: require("../../assets/images/kentang.png"),
   timun: require("../../assets/images/timun.png"),
-  jeruk: require("../../assets/images/jeruk.png"),
+  brokoli: require("../../assets/images/brokoli.png"),
+  jagung: require("../../assets/images/jagung.png"),
+  bawang: require("../../assets/images/bawang.png"),
+  tomat: require("../../assets/images/tomat.png"),
+
   default: require("../../assets/images/pisang.png"),
 };
 
@@ -48,6 +57,7 @@ const AnimatedProductCard = memo(({ item, index, navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
+  //5. Animation
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -116,7 +126,7 @@ const HomeScreen = ({ navigation }) => {
   const { logout } = useAuth();
 
   useEffect(() => {
-    const starCountRef = ref(db, "products/");
+    const starCountRef = ref(db, "products/"); //2. Cloud Data Storage
     const unsubscribe = onValue(
       starCountRef,
       (snapshot) => {
@@ -266,9 +276,11 @@ const HomeScreen = ({ navigation }) => {
                 Mengambil data...
               </Text>
             </View>
+
+            //4. Point Performance Optimization
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((item, index) => (
-              <AnimatedProductCard
+              <AnimatedProductCard 
                 key={item.id}
                 item={item}
                 index={index}
